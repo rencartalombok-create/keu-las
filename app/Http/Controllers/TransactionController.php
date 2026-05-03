@@ -53,6 +53,20 @@ class TransactionController extends Controller
         return redirect()->back()->with('success', 'Transaksi berhasil ditambahkan.');
     }
 
+    public function update(Request $request, Transaction $transaction)
+    {
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'type' => 'required|in:income,expense',
+            'amount' => 'required|numeric|min:0',
+            'description' => 'required|string|max:255',
+        ]);
+
+        $transaction->update($validated);
+
+        return redirect()->back()->with('success', 'Transaksi berhasil diubah.');
+    }
+
     public function destroy(Transaction $transaction)
     {
         $transaction->delete();

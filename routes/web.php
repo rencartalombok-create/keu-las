@@ -5,6 +5,7 @@ use App\Http\Controllers\TransactionController;
 
 Route::get('/', [TransactionController::class, 'index'])->name('dashboard');
 Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
+Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
 Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
 Route::get('/report', [TransactionController::class, 'report'])->name('report');
 

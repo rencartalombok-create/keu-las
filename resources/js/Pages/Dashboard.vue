@@ -15,6 +15,17 @@ const form = useForm({
   description: ''
 });
 
+const isEditModalOpen = ref(false);
+const editDisplayAmount = ref('');
+
+const editForm = useForm({
+  id: null,
+  date: '',
+  type: 'income',
+  amount: '',
+  description: ''
+});
+
 const displayAmount = ref('');
 
 const formatInputAmount = (e) => {
@@ -34,6 +45,36 @@ const submit = () => {
     onSuccess: () => {
       form.reset('amount', 'description');
       displayAmount.value = '';
+    }
+  });
+};
+
+const openEditModal = (tx) => {
+  editForm.id = tx.id;
+  editForm.date = tx.date;
+  editForm.type = tx.type;
+  editForm.amount = tx.amount;
+  editForm.description = tx.description;
+  editDisplayAmount.value = parseInt(tx.amount, 10).toLocaleString('id-ID');
+  isEditModalOpen.value = true;
+};
+
+const formatEditInputAmount = (e) => {
+  let val = e.target.value.replace(/\D/g, '');
+  if (val === '') {
+    editDisplayAmount.value = '';
+    editForm.amount = '';
+    return;
+  }
+  editForm.amount = val;
+  editDisplayAmount.value = parseInt(val, 10).toLocaleString('id-ID');
+};
+
+const updateTransaction = () => {
+  editForm.put(`/transactions/${editForm.id}`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      isEditModalOpen.value = false;
     }
   });
 };
@@ -162,7 +203,10 @@ const formatDate = (dateString) => {
                     {{ tx.type === 'income' ? '+' : '-' }} {{ formatCurrency(tx.amount) }}
                   </td>
                   <td style="text-align: center;">
-                    <button @click="deleteTransaction(tx.id)" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                    <button @click="openEditModal(tx)" class="badge" style="background: #e2e8f0; color: var(--text-main); padding: 0.25rem 0.5rem; font-size: 0.75rem; border: none; cursor: pointer; margin-right: 0.5rem;">
+                      Edit
+                    </button>
+                    <button @click="deleteTransaction(tx.id)" class="badge badge-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border: none; cursor: pointer;">
                       Hapus
                     </button>
                   </td>
@@ -173,5 +217,61 @@ const formatDate = (dateString) => {
         </div>
       </div>
     </div>
+
+    <!-- Modal Edit Transaksi -->
+    <div v-if="isEditModalOpen" class="modal-backdrop">
+      <div class="modal-card card" style="max-width: 500px;">
+        <h3 style="margin-bottom: 1.5rem; font-weight: 600; font-size: 1.25rem;">Edit Transaksi</h3>
+        <form @submit.prevent="updateTransaction">
+          <div class="form-group">
+            <label class="form-label">Tanggal</label>
+            <input type="date" class="form-input" v-model="editForm.date" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Jenis Transaksi</label>
+            <select class="form-input" v-model="editForm.type" required>
+              <option value="income">Pemasukan</option>
+              <option value="expense">Pengeluaran</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Nominal (Rp)</label>
+            <input type="text" class="form-input" v-model="editDisplayAmount" @input="formatEditInputAmount" required placeholder="Contoh: 150.000">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Keterangan</label>
+            <textarea class="form-input" v-model="editForm.description" rows="3" required placeholder="Contoh: Pembayaran DP Pagar Besi"></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+            <button type="button" @click="isEditModalOpen = false" class="btn" style="background: white; border: 1px solid var(--border-color); color: var(--text-main);">Batal</button>
+            <button type="submit" class="btn btn-primary" :disabled="editForm.processing">Simpan Perubahan</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
+
+<style>
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+  padding: 1rem;
+}
+.modal-card {
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+</style>
