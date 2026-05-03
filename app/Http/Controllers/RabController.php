@@ -34,24 +34,35 @@ class RabController extends Controller
             $totalAmount += $item['total_price'];
         }
 
-        $rab = Rab::create([
-            'project_name' => $validated['project_name'],
-            'customer_name' => $validated['customer_name'],
-            'date' => $validated['date'],
-            'total_amount' => $totalAmount,
-        ]);
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            $rab = Rab::create([
+                'project_name' => $validated['project_name'],
+                'customer_name' => $validated['customer_name'],
+                'date' => $validated['date'],
+                'total_amount' => $totalAmount,
+            ]);
 
-        foreach ($validated['items'] as $item) {
-            $rab->items()->create($item);
+            foreach ($validated['items'] as $item) {
+                $rab->items()->create($item);
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+            return redirect()->back()->with('success', 'RAB berhasil dibuat.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal membuat RAB: ' . $e->getMessage());
         }
-
-        return redirect()->back()->with('success', 'RAB berhasil dibuat.');
     }
 
     public function destroy(Rab $rab)
     {
-        $rab->delete();
-        return redirect()->back()->with('success', 'RAB berhasil dihapus.');
+        try {
+            $rab->delete();
+            return redirect()->back()->with('success', 'RAB berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menghapus RAB: ' . $e->getMessage());
+        }
     }
 
     public function report(Rab $rab)

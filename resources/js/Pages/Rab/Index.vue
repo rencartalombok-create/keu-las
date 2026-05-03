@@ -11,7 +11,7 @@ const isModalOpen = ref(false);
 const form = useForm({
   project_name: '',
   customer_name: '',
-  date: new Date().toISOString().split('T')[0],
+  date: new Date().toLocaleDateString('en-CA'),
   items: [
     { description: '', quantity: 1, unit_price: 0 }
   ]
@@ -90,6 +90,14 @@ const formatDate = (dateString) => {
     </header>
 
     <div class="container">
+      <!-- Flash Messages -->
+      <div v-if="$page.props.flash.success" class="alert alert-success">
+        {{ $page.props.flash.success }}
+      </div>
+      <div v-if="$page.props.flash.error" class="alert alert-danger">
+        {{ $page.props.flash.error }}
+      </div>
+
       <div class="card" style="padding: 0;">
         <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
           <h3 style="font-weight: 600;">Daftar RAB</h3>

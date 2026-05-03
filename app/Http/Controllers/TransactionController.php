@@ -27,14 +27,16 @@ class TransactionController extends Controller
         
         $totalIncome = $transactions->where('type', 'income')->sum('amount');
         $totalExpense = $transactions->where('type', 'expense')->sum('amount');
-        $balance = $totalIncome - $totalExpense;
+        
+        // Cumulative balance should be calculated from all transactions for accuracy
+        $actualBalance = Transaction::where('type', 'income')->sum('amount') - Transaction::where('type', 'expense')->sum('amount');
 
         return Inertia::render('Dashboard', [
             'transactions' => $transactions,
             'summary' => [
                 'totalIncome' => $totalIncome,
                 'totalExpense' => $totalExpense,
-                'balance' => $balance
+                'balance' => $actualBalance
             ],
             'currentFilter' => $filter
         ]);
@@ -70,8 +72,12 @@ class TransactionController extends Controller
 
     public function destroy(Transaction $transaction)
     {
-        $transaction->delete();
-        return redirect()->route('dashboard')->with('success', 'Transaksi berhasil dihapus.');
+        try {
+            $transaction->delete();
+            return redirect()->back()->with('success', 'Transaksi berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menghapus transaksi: ' . $e->getMessage());
+        }
     }
 
     public function report(Request $request)
@@ -88,7 +94,7 @@ class TransactionController extends Controller
                   ->whereYear('date', $lastMonth->year);
         }
 
-        $transactions = $query->orderBy('date', 'asc')->get();
+        $transactions = $query->orderBy('date', 'asc')->orderBy('id', 'asc')->get();
         $totalIncome = $transactions->where('type', 'income')->sum('amount');
         $totalExpense = $transactions->where('type', 'expense')->sum('amount');
         $balance = $totalIncome - $totalExpense;

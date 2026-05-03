@@ -9,7 +9,7 @@ const props = defineProps({
 });
 
 const form = useForm({
-  date: new Date().toISOString().split('T')[0],
+  date: new Date().toLocaleDateString('en-CA'),
   type: 'income',
   amount: '',
   description: ''
@@ -116,6 +116,14 @@ const formatDate = (dateString) => {
     </header>
 
     <div class="container">
+      <!-- Flash Messages -->
+      <div v-if="$page.props.flash.success" class="alert alert-success">
+        {{ $page.props.flash.success }}
+      </div>
+      <div v-if="$page.props.flash.error" class="alert alert-danger">
+        {{ $page.props.flash.error }}
+      </div>
+
       <div class="tabs">
         <Link href="/" :data="{ filter: 'all' }" class="tab" :class="{ 'active': currentFilter === 'all' }">Semua Transaksi</Link>
         <Link href="/" :data="{ filter: 'this_month' }" class="tab" :class="{ 'active': currentFilter === 'this_month' }">Bulan Ini</Link>
