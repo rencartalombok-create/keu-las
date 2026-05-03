@@ -18,8 +18,9 @@ class TransactionController extends Controller
             $query->whereMonth('date', \Carbon\Carbon::now()->month)
                   ->whereYear('date', \Carbon\Carbon::now()->year);
         } elseif ($filter === 'last_month') {
-            $query->whereMonth('date', \Carbon\Carbon::now()->subMonth()->month)
-                  ->whereYear('date', \Carbon\Carbon::now()->subMonth()->year);
+            $lastMonth = \Carbon\Carbon::now()->subMonth();
+            $query->whereMonth('date', $lastMonth->month)
+                  ->whereYear('date', $lastMonth->year);
         }
 
         $transactions = $query->orderBy('date', 'desc')->orderBy('id', 'desc')->get();
@@ -70,7 +71,7 @@ class TransactionController extends Controller
     public function destroy(Transaction $transaction)
     {
         $transaction->delete();
-        return redirect()->back()->with('success', 'Transaksi berhasil dihapus.');
+        return redirect()->route('dashboard')->with('success', 'Transaksi berhasil dihapus.');
     }
 
     public function report(Request $request)
@@ -82,8 +83,9 @@ class TransactionController extends Controller
             $query->whereMonth('date', \Carbon\Carbon::now()->month)
                   ->whereYear('date', \Carbon\Carbon::now()->year);
         } elseif ($filter === 'last_month') {
-            $query->whereMonth('date', \Carbon\Carbon::now()->subMonth()->month)
-                  ->whereYear('date', \Carbon\Carbon::now()->subMonth()->year);
+            $lastMonth = \Carbon\Carbon::now()->subMonth();
+            $query->whereMonth('date', $lastMonth->month)
+                  ->whereYear('date', $lastMonth->year);
         }
 
         $transactions = $query->orderBy('date', 'asc')->get();
