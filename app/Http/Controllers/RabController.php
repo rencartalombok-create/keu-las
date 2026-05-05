@@ -58,9 +58,19 @@ class RabController extends Controller
     public function destroy(Rab $rab)
     {
         try {
-            $rab->delete();
+            $id = $rab->id;
+            \Illuminate\Support\Facades\Log::info("Attempting to delete RAB ID: {$id}");
+
+            \Illuminate\Support\Facades\DB::transaction(function () use ($rab) {
+                // Ensure items are deleted first, although cascade should handle it
+                $rab->items()->delete();
+                $rab->delete();
+            });
+
+            \Illuminate\Support\Facades\Log::info("Successfully deleted RAB ID: {$id}");
             return redirect()->back()->with('success', 'RAB berhasil dihapus.');
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to delete RAB: " . $e->getMessage());
             return redirect()->back()->with('error', 'Gagal menghapus RAB: ' . $e->getMessage());
         }
     }
