@@ -13,6 +13,7 @@ Route::middleware('cache.headers:private;max_age=0;no_cache;no_store')->group(fu
 
     Route::get('/rab', [RabController::class, 'index'])->name('rab.index');
     Route::post('/rab', [RabController::class, 'store'])->name('rab.store');
+    Route::put('/rab/{rab}', [RabController::class, 'update'])->name('rab.update');
     Route::delete('/rab/{rab}', [RabController::class, 'destroy'])->name('rab.destroy');
     Route::get('/rab/{rab}/report', [RabController::class, 'report'])->name('rab.report');
 });

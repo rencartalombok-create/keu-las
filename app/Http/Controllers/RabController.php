@@ -55,6 +55,46 @@ class RabController extends Controller
         }
     }
 
+    public function update(Request $request, Rab $rab)
+    {
+        $validated = $request->validate([
+            'project_name' => 'required|string|max:255',
+            'customer_name' => 'required|string|max:255',
+            'date' => 'required|date',
+            'items' => 'required|array|min:1',
+            'items.*.description' => 'required|string',
+            'items.*.quantity' => 'required|numeric|min:1',
+            'items.*.unit_price' => 'required|numeric|min:0',
+        ]);
+
+        $totalAmount = 0;
+        foreach ($validated['items'] as &$item) {
+            $item['total_price'] = $item['quantity'] * $item['unit_price'];
+            $totalAmount += $item['total_price'];
+        }
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            $rab->update([
+                'project_name' => $validated['project_name'],
+                'customer_name' => $validated['customer_name'],
+                'date' => $validated['date'],
+                'total_amount' => $totalAmount,
+            ]);
+
+            $rab->items()->delete();
+            foreach ($validated['items'] as $item) {
+                $rab->items()->create($item);
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+            return redirect()->back()->with('success', 'RAB berhasil diperbarui.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal memperbarui RAB: ' . $e->getMessage());
+        }
+    }
+
     public function destroy(Rab $rab)
     {
         try {

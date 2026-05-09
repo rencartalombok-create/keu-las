@@ -60,6 +60,68 @@ const deleteRab = (id) => {
   }
 };
 
+const isEditModalOpen = ref(false);
+
+const editForm = useForm({
+  id: null,
+  project_name: '',
+  customer_name: '',
+  date: '',
+  items: []
+});
+
+const editDisplayAmount = ref([]);
+
+const openEditModal = (rab) => {
+  editForm.id = rab.id;
+  editForm.project_name = rab.project_name;
+  editForm.customer_name = rab.customer_name;
+  editForm.date = rab.date;
+  
+  editForm.items = rab.items.map(item => ({
+    description: item.description,
+    quantity: item.quantity,
+    unit_price: item.unit_price
+  }));
+
+  editDisplayAmount.value = rab.items.map(item => parseInt(item.unit_price, 10).toLocaleString('id-ID'));
+  
+  isEditModalOpen.value = true;
+};
+
+const addEditItem = () => {
+  editForm.items.push({ description: '', quantity: 1, unit_price: 0 });
+  editDisplayAmount.value.push('0');
+};
+
+const removeEditItem = (index) => {
+  if (editForm.items.length > 1) {
+    editForm.items.splice(index, 1);
+    editDisplayAmount.value.splice(index, 1);
+  }
+};
+
+const formatEditInputAmount = (e, index) => {
+  let val = e.target.value.replace(/\D/g, '');
+  if (val === '') {
+    editDisplayAmount.value[index] = '';
+    editForm.items[index].unit_price = 0;
+    return;
+  }
+  editForm.items[index].unit_price = parseInt(val, 10);
+  editDisplayAmount.value[index] = parseInt(val, 10).toLocaleString('id-ID');
+};
+
+const updateRab = () => {
+  editForm.put(`/rab/${editForm.id}`, {
+    preserveScroll: true,
+    preserveState: false,
+    onSuccess: () => {
+      isEditModalOpen.value = false;
+    }
+  });
+};
+
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -127,6 +189,7 @@ const formatDate = (dateString) => {
                   {{ formatCurrency(rab.total_amount) }}
                 </td>
                 <td style="text-align: center;">
+                  <button @click="openEditModal(rab)" class="badge" style="background: #3b82f6; color: white; margin-right: 0.5rem; padding: 0.4rem 0.8rem; border: none; cursor: pointer;">Edit</button>
                   <a :href="`/rab/${rab.id}/report`" target="_blank" class="badge badge-success" style="margin-right: 0.5rem; padding: 0.4rem 0.8rem; cursor: pointer;">Cetak</a>
                   <button @click="deleteRab(rab.id)" class="badge badge-danger" style="padding: 0.4rem 0.8rem; border: none; cursor: pointer;">Hapus</button>
                 </td>
@@ -185,6 +248,58 @@ const formatDate = (dateString) => {
           <div style="display: flex; justify-content: flex-end; gap: 1rem;">
             <button type="button" @click="isModalOpen = false" class="btn" style="background: white; border: 1px solid var(--border-color); color: var(--text-main);">Batal</button>
             <button type="submit" class="btn btn-primary" :disabled="form.processing">Simpan RAB</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- Modal Edit RAB -->
+    <div v-if="isEditModalOpen" class="modal-backdrop">
+      <div class="modal-card card">
+        <h3 style="margin-bottom: 1.5rem; font-weight: 600; font-size: 1.25rem;">Edit RAB</h3>
+        <form @submit.prevent="updateRab">
+          <div class="grid-modal" style="margin-bottom: 1.5rem;">
+            <div class="form-group" style="margin: 0;">
+              <label class="form-label">Nama Proyek</label>
+              <input type="text" class="form-input" v-model="editForm.project_name" required placeholder="Contoh: Pembuatan Kanopi">
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label class="form-label">Nama Pelanggan</label>
+              <input type="text" class="form-input" v-model="editForm.customer_name" required placeholder="Contoh: Bpk. Budi">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Tanggal</label>
+            <input type="date" class="form-input" v-model="editForm.date" required>
+          </div>
+
+          <h4 style="margin: 2rem 0 1rem 0; font-weight: 600; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">Item Pekerjaan / Material</h4>
+          
+          <div v-for="(item, index) in editForm.items" :key="index" class="grid-items">
+            <div class="form-group" style="margin: 0;">
+              <label class="form-label" style="font-size: 0.8rem;" v-if="index === 0">Deskripsi</label>
+              <input type="text" class="form-input" v-model="item.description" required placeholder="Contoh: Besi Hollow 4x4">
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label class="form-label" style="font-size: 0.8rem;" v-if="index === 0">Qty</label>
+              <input type="number" class="form-input" v-model="item.quantity" min="1" required>
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label class="form-label" style="font-size: 0.8rem;" v-if="index === 0">Harga Satuan (Rp)</label>
+              <input type="text" class="form-input" v-model="editDisplayAmount[index]" @input="e => formatEditInputAmount(e, index)" required placeholder="100.000">
+            </div>
+            <div>
+              <button type="button" @click="removeEditItem(index)" class="btn btn-danger" style="padding: 0.75rem; width: 100%;" v-if="editForm.items.length > 1">Hapus</button>
+            </div>
+          </div>
+
+          <button type="button" @click="addEditItem" class="btn" style="background: #f1f5f9; color: var(--text-main); margin-bottom: 2rem; width: 100%;">
+            + Tambah Item
+          </button>
+
+          <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+            <button type="button" @click="isEditModalOpen = false" class="btn" style="background: white; border: 1px solid var(--border-color); color: var(--text-main);">Batal</button>
+            <button type="submit" class="btn btn-primary" :disabled="editForm.processing">Simpan Perubahan</button>
           </div>
         </form>
       </div>
