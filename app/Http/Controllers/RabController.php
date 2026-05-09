@@ -61,11 +61,7 @@ class RabController extends Controller
             $id = $rab->id;
             \Illuminate\Support\Facades\Log::info("Attempting to delete RAB ID: {$id}");
 
-            \Illuminate\Support\Facades\DB::transaction(function () use ($rab) {
-                // Ensure items are deleted first, although cascade should handle it
-                $rab->items()->delete();
-                $rab->delete();
-            });
+            $rab->delete();
 
             \Illuminate\Support\Facades\Log::info("Successfully deleted RAB ID: {$id}");
             return redirect()->back()->with('success', 'RAB berhasil dihapus.');

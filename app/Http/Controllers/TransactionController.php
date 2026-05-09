@@ -76,9 +76,7 @@ class TransactionController extends Controller
             $id = $transaction->id;
             \Illuminate\Support\Facades\Log::info("Attempting to delete transaction ID: {$id}");
             
-            \Illuminate\Support\Facades\DB::transaction(function () use ($transaction) {
-                $transaction->delete();
-            });
+            $transaction->delete();
             
             \Illuminate\Support\Facades\Log::info("Successfully deleted transaction ID: {$id}");
             return redirect()->back()->with('success', 'Transaksi berhasil dihapus.');

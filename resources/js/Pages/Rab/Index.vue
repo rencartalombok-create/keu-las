@@ -56,7 +56,7 @@ const submit = () => {
 
 const deleteRab = (id) => {
   if (confirm('Apakah Anda yakin ingin menghapus RAB ini?')) {
-    router.delete(`/rab/${id}`, { preserveScroll: true });
+    router.delete(`/rab/${id}`, { preserveScroll: true, preserveState: false });
   }
 };
 

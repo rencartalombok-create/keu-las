@@ -81,7 +81,7 @@ const updateTransaction = () => {
 
 const deleteTransaction = (id) => {
   if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
-    router.delete(`/transactions/${id}`, { preserveScroll: true });
+    router.delete(`/transactions/${id}`, { preserveScroll: true, preserveState: false });
   }
 };
 
