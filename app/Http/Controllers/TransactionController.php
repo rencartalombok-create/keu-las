@@ -106,6 +106,11 @@ class TransactionController extends Controller
         $balance = $totalIncome - $totalExpense;
 
         $pdf = Pdf::loadView('pdf.report', compact('transactions', 'totalIncome', 'totalExpense', 'balance', 'filter'));
+        
+        if ($request->has('download')) {
+            return $pdf->download('laporan-keuangan-' . now()->format('Y-m-d') . '.pdf');
+        }
+
         return $pdf->stream('laporan-keuangan.pdf');
     }
 }

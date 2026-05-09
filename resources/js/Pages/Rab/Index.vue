@@ -190,6 +190,7 @@ const formatDate = (dateString) => {
                 </td>
                 <td style="text-align: center;">
                   <button @click="openEditModal(rab)" class="badge" style="background: #3b82f6; color: white; margin-right: 0.5rem; padding: 0.4rem 0.8rem; border: none; cursor: pointer;">Edit</button>
+                  <a :href="`/rab/${rab.id}/report?download=1`" class="badge" style="background: var(--primary); color: white; margin-right: 0.5rem; padding: 0.4rem 0.8rem; cursor: pointer; text-decoration: none;">Download</a>
                   <a :href="`/rab/${rab.id}/report`" target="_blank" class="badge badge-success" style="margin-right: 0.5rem; padding: 0.4rem 0.8rem; cursor: pointer;">Cetak</a>
                   <button @click="deleteRab(rab.id)" class="badge badge-danger" style="padding: 0.4rem 0.8rem; border: none; cursor: pointer;">Hapus</button>
                 </td>

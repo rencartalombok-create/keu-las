@@ -111,10 +111,15 @@ class RabController extends Controller
         }
     }
 
-    public function report(Rab $rab)
+    public function report(Request $request, Rab $rab)
     {
         $rab->load('items');
         $pdf = Pdf::loadView('pdf.rab', compact('rab'));
+        
+        if ($request->has('download')) {
+            return $pdf->download('RAB-' . str_replace(' ', '-', $rab->project_name) . '.pdf');
+        }
+
         return $pdf->stream('RAB-' . $rab->project_name . '.pdf');
     }
 }
